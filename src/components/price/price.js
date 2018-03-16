@@ -9,11 +9,11 @@ const propTypes = {
   amount: PropTypes.number,
 };
 
-const defaultProps = { style: null, amount: 0 };
+const defaultProps = { style: null, amount: null };
 
 const Price = ({ amount, style, ...props }) => (
   <View {...props} style={[styles.container, style]}>
-    <Text style={styles.amountText}>{amount}</Text>
+    <Text style={styles.amountText}>{amount && amount.toFixed(2)}</Text>
     <Text style={styles.currencyText}>€</Text>
   </View>
 );

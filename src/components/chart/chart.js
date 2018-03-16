@@ -27,8 +27,9 @@ const FloatingButton = ({ data, ...restProps }) => (
     contentInset={{ top: 20, bottom: 20 }}
     showGrid={false}
     svg={{ fill: 'rgba(253, 44, 96, 0.2)' }}
-    curve={shape.curveNatural}
+    // curve={shape.curveNatural}
     extras={[ExtraLine]}
+    animate
     {...restProps}
   />
 );

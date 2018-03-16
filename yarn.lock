@@ -5536,6 +5536,10 @@ mixin-deep@^1.2.0:
   dependencies:
     minimist "0.0.8"
 
+moment@2.21.0:
+  version "2.21.0"
+  resolved "https://registry.yarnpkg.com/moment/-/moment-2.21.0.tgz#2a114b51d2a6ec9e6d83cf803f838a878d8a023a"
+
 morgan@~1.6.1:
   version "1.6.1"
   resolved "https://registry.yarnpkg.com/morgan/-/morgan-1.6.1.tgz#5fd818398c6819cba28a7cd6664f292fe1c0bbf2"
@@ -6747,6 +6751,10 @@ react-native-compat@^1.0.0:
   dependencies:
     prop-types "^15.5.10"
 
+react-native-config@0.11.5:
+  version "0.11.5"
+  resolved "https://registry.yarnpkg.com/react-native-config/-/react-native-config-0.11.5.tgz#516cb7b6ec437c7739236ca075971db3aabdcb95"
+
 react-native-fast-image@^2.2.5:
   version "2.2.5"
   resolved "https://registry.yarnpkg.com/react-native-fast-image/-/react-native-fast-image-2.2.5.tgz#dd0eaee24446a9546a2edce04ddbd60b3a4c547c"
@@ -7049,6 +7057,10 @@ redux-api-middleware@^2.2.0:
     babel-plugin-transform-runtime "^6.23.0"
     babel-runtime "^6.25.0"
     lodash.isplainobject "^4.0.6"
+
+redux-persist@5.9.1:
+  version "5.9.1"
+  resolved "https://registry.yarnpkg.com/redux-persist/-/redux-persist-5.9.1.tgz#83bd4abd526ef768f63fceee338fa9d8ed6552d6"
 
 redux-thunk@^2.2.0:
   version "2.2.0"
