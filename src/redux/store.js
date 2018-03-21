@@ -8,7 +8,7 @@ import exchanges from './modules/exchanges';
 const middlewares = [thunkMiddleware];
 
 const exchangesPersistConfig = {
-  key: 'form',
+  key: 'exchanges',
   storage: AsyncStorage,
 };
 

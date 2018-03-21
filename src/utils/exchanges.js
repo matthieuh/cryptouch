@@ -1,59 +1,36 @@
 import ccxt from 'ccxt';
 import Config from 'react-native-config';
 
+console.log('Config', Config);
+
 export const availableExchanges = ['kraken'];
 export const ccxtExchanges = ['kraken'];
 
 export const isExchangeAvailable = exchangeName => availableExchanges.includes(exchangeName);
 
-export const asyncReduce = async (arr, fn, val, pure) => {
-  for (let i = 0; i < arr.length; i++) {
-    const v = await fn(val, arr[i], i, arr);
-    if (pure !== false) val = v;
-  }
-  return val;
-};
-
-export const getBalanceValue = async (exchangeName, balance, currency = 'BTC') => {
+export const getBalanceIn = async (exchangeName, balances, currency) => {
   const exchange = new ccxt[exchangeName]();
   exchange.apiKey = Config.KRAKEN_API_KEY;
   exchange.secret = Config.KRAKEN_SECRET;
+  const tickers = await exchange.fetchTickers();
+  return Object.entries(balances).reduce((res, [key, amount]) => {
+    if (key === currency) {
+      res[key] = balances[key];
+      return res;
+    }
 
-  await exchange.loadMarkets();
-
-  const balanceArray = Object.entries(balance);
-  const totaPrice = await asyncReduce(
-    balanceArray,
-    async (total, [currencyName, amount]) => {
-      if (currencyName.toUpperCase() === currency.toUpperCase()) {
-        return total + amount;
-      }
-      const marketId = `${currencyName.toUpperCase()}/${currency.toUpperCase()}`;
-      try {
-        const ticker = await exchange.fetchTicker(marketId);
-        const price = ticker.last * amount;
-        return total + price;
-      } catch (error) {
-        return total + 0;
-      }
-    },
-    0,
-  );
-
-  return totaPrice;
+    const ticker = tickers[`${key}/${currency}`];
+    res[key] = ticker ? ticker.last * amount : 0;
+    return res;
+  }, {});
 };
 
-export const getBalancePrice = async (balance, currency) => {
-  const valueTasks = balance.map(async b => getBalanceValue(b.id, b.value, currency));
-  const valueTasksRes = await Promise.all(valueTasks);
-
-  return balance.map((b, index) => ({
-    ...b,
-    total: {
-      ...b.total,
-      [currency]: valueTasksRes[index],
-    },
-  }));
+export const getTopPrices = async (exchangeName, topCurrencies = ['USD', 'EUR']) => {
+  const exchange = new ccxt[exchangeName]();
+  exchange.apiKey = Config.KRAKEN_API_KEY;
+  exchange.secret = Config.KRAKEN_SECRET;
+  const tickers = await exchange.fetchTickers();
+  return Object.assign(...topCurrencies.map(tc => ({ [tc]: tickers[`BTC/${tc.toUpperCase()}`].last })));
 };
 
 export const fetchBalance = (exchangeName) => {

@@ -6,17 +6,22 @@ import styles from './styles';
 
 const propTypes = {
   style: ViewPropTypes.style,
-  amount: PropTypes.number,
+  btcAmount: PropTypes.number,
 };
 
-const defaultProps = { style: null, amount: null };
+const defaultProps = { style: null, btcAmount: null };
 
-const Price = ({ amount, style, ...props }) => (
-  <View {...props} style={[styles.container, style]}>
-    <Text style={styles.amountText}>{amount && amount.toFixed(2)}</Text>
-    <Text style={styles.currencyText}>€</Text>
-  </View>
-);
+const Price = ({
+  btcAmount, btcValues = {}, currency, style, ...props
+}) => {
+  const price = btcValues[currency] * btcAmount;
+  return (
+    <View {...props} style={[styles.container, style]}>
+      <Text style={styles.amountText}>{price && price.toFixed(2)}</Text>
+      <Text style={styles.currencyText}>€</Text>
+    </View>
+  );
+};
 
 Price.defaultProps = defaultProps;
 Price.propTypes = propTypes;

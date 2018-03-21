@@ -6,7 +6,13 @@ import { bindActionCreators } from 'redux';
 import SafeAreaView from 'react-native-safe-area-view';
 import moment from 'moment';
 
-import { fetchBalances, getBalancePrice, getLastUpdate } from '../../redux/modules/exchanges';
+import {
+  fetchBalances,
+  getTotalBalancesValue,
+  getTopPrices,
+  getCurrentCurrency,
+  getLastUpdate,
+} from '../../redux/modules/exchanges';
 
 import Modal from '../../components/modal';
 import Chart from '../../components/chart';
@@ -16,8 +22,10 @@ import Price from '../../components/price';
 import styles from './styles';
 
 const mapStateToProps = state => ({
-  balanceValue: getBalancePrice(state, 'EUR'),
+  totalBalancesValue: getTotalBalancesValue(state),
   lastUpdate: getLastUpdate(state),
+  topPrices: getTopPrices(state),
+  currentCurrency: getCurrentCurrency(state),
 });
 
 const mapDispatchToProps = dispatch => bindActionCreators({ fetchBalances }, dispatch);
@@ -25,11 +33,11 @@ const mapDispatchToProps = dispatch => bindActionCreators({ fetchBalances }, dis
 class Root extends Component {
   static propTypes = {
     fetchBalances: PropTypes.func.isRequired,
-    balanceValue: PropTypes.number,
+    totalBalancesValue: PropTypes.number,
     lastUpdate: PropTypes.string,
   };
   static defaultProps = {
-    balanceValue: null,
+    totalBalancesValue: null,
     lastUpdate: null,
   };
 
@@ -51,16 +59,25 @@ class Root extends Component {
   };
 
   render() {
-    const { balanceValue, lastUpdate } = this.props;
+    const {
+      totalBalancesValue, lastUpdate, topPrices, currentCurrency,
+    } = this.props;
     const { addModalVisible } = this.state;
     const chartData = [50, 10, 40, 95, 85, 91, 35, 53, 24, 50];
     return (
       <View style={styles.container}>
         <View style={styles.chartContainer}>
           <SafeAreaView style={styles.content}>
-            <Price amount={balanceValue} />
+            <Price
+              btcAmount={totalBalancesValue}
+              btcValues={topPrices}
+              currency={currentCurrency}
+            />
             <Chart data={chartData} />
-            <Text style={{ color: 'white' }}>Last Update: {moment(lastUpdate).fromNow()}</Text>
+            <Text style={{ color: 'white' }}>
+              Last Update: {moment(lastUpdate).fromNow()} - {JSON.stringify(topPrices)} -{' '}
+              {totalBalancesValue} - {currentCurrency}
+            </Text>
           </SafeAreaView>
         </View>
         <FloatingButton onPress={this.handleAddPress}>Add</FloatingButton>
