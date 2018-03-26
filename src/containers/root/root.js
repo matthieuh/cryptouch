@@ -4,7 +4,6 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import SafeAreaView from 'react-native-safe-area-view';
-import moment from 'moment';
 
 import {
   fetchBalances,
@@ -12,6 +11,7 @@ import {
   getTopPrices,
   getCurrentCurrency,
   getLastUpdate,
+  getSyncedExchanges,
 } from '../../redux/modules/exchanges';
 
 import Modal from '../../components/modal';
@@ -26,19 +26,25 @@ const mapStateToProps = state => ({
   lastUpdate: getLastUpdate(state),
   topPrices: getTopPrices(state),
   currentCurrency: getCurrentCurrency(state),
+  syncedExchanges: getSyncedExchanges(state),
 });
 
 const mapDispatchToProps = dispatch => bindActionCreators({ fetchBalances }, dispatch);
 
 class Root extends Component {
   static propTypes = {
+    currentCurrency: PropTypes.string.isRequired,
     fetchBalances: PropTypes.func.isRequired,
-    totalBalancesValue: PropTypes.number,
     lastUpdate: PropTypes.string,
+    syncedExchanges: PropTypes.shape({}),
+    topPrices: PropTypes.shape({}),
+    totalBalancesValue: PropTypes.number,
   };
   static defaultProps = {
     totalBalancesValue: null,
     lastUpdate: null,
+    topPrices: {},
+    syncedExchanges: {},
   };
 
   constructor(props) {
@@ -60,7 +66,11 @@ class Root extends Component {
 
   render() {
     const {
-      totalBalancesValue, lastUpdate, topPrices, currentCurrency,
+      totalBalancesValue,
+      lastUpdate,
+      topPrices,
+      currentCurrency,
+      syncedExchanges,
     } = this.props;
     const { addModalVisible } = this.state;
     const chartData = [50, 10, 40, 95, 85, 91, 35, 53, 24, 50];
@@ -75,8 +85,9 @@ class Root extends Component {
             />
             <Chart data={chartData} />
             <Text style={{ color: 'white' }}>
-              Last Update: {moment(lastUpdate).fromNow()} - {JSON.stringify(topPrices)} -{' '}
-              {totalBalancesValue} - {currentCurrency}
+              Last Update: {JSON.stringify(lastUpdate)} - {JSON.stringify(topPrices)} -{' '}
+              {JSON.stringify(totalBalancesValue)} - {JSON.stringify(currentCurrency)} -{' '}
+              {syncedExchanges}
             </Text>
           </SafeAreaView>
         </View>

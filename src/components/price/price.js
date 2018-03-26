@@ -1,5 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import { get, Map } from 'immutable';
 
 import { View, ViewPropTypes, Text } from 'react-native';
 import styles from './styles';
@@ -14,7 +15,10 @@ const defaultProps = { style: null, btcAmount: null };
 const Price = ({
   btcAmount, btcValues = {}, currency, style, ...props
 }) => {
-  const price = btcValues[currency] * btcAmount;
+  console.log('btcValues', btcValues, currency);
+  const currencyInBtc =
+    btcValues && Map.isMap(btcValues) ? get(btcValues, currency) : btcValues[currency];
+  const price = currencyInBtc * btcAmount;
   return (
     <View {...props} style={[styles.container, style]}>
       <Text style={styles.amountText}>{price && price.toFixed(2)}</Text>

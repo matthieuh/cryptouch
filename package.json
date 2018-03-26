@@ -31,7 +31,8 @@
     "react-test-renderer": "16.2.0"
   },
   "scripts": {
-    "lint": "eslint --cache --ignore-path .gitignore --format=node_modules/eslint-formatter-pretty . ",
+    "lint":
+      "eslint --cache --ignore-path .gitignore --format=node_modules/eslint-formatter-pretty . ",
     "start": "react-native start",
     "android": "react-native run-android",
     "ios": "cross-env ENVFILE=.env.dev react-native run-ios",
@@ -44,26 +45,30 @@
     "preset": "react-native"
   },
   "dependencies": {
-    "ccxt": "1.11.63",
-    "d3-shape": "1.2.0",
-    "lodash": "4.17.5",
-    "moment": "2.21.0",
+    "ccxt": "^1.11.63",
+    "d3-shape": "^1.2.0",
+    "immutable": "^4.0.0-rc.9",
+    "lodash": "^4.17.5",
+    "moment": "^2.21.0",
     "prop-types": "^15.6.0",
-    "react": "16.2.0",
-    "react-native": "0.52.0",
-    "react-native-config": "0.11.5",
+    "react": "^16.2.0",
+    "react-native": "^0.52.0",
+    "react-native-config": "^0.11.5",
     "react-native-fast-image": "^2.2.5",
-    "react-native-linear-gradient": "2.4.0",
-    "react-native-modal": "5.2.0",
+    "react-native-linear-gradient": "^2.4.0",
+    "react-native-modal": "^5.2.0",
     "react-native-safe-area-view": "^0.7.0",
-    "react-native-svg": "6.2.2",
-    "react-native-svg-charts": "4.0.1",
+    "react-native-svg": "^6.2.2",
+    "react-native-svg-charts": "^4.0.1",
     "react-redux": "^5.0.6",
     "redux": "^3.7.2",
     "redux-actions": "^2.2.1",
     "redux-api-middleware": "^2.2.0",
-    "redux-persist": "5.9.1",
+    "redux-immutable": "^4.0.0",
+    "redux-persist": "^5.9.1",
+    "redux-persist-transform-immutable": "^5.0.0",
     "redux-thunk": "^2.2.0",
-    "styled-components": "3.2.1"
+    "reselect": "^3.0.1",
+    "styled-components": "^3.2.1"
   }
 }

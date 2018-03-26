@@ -1,26 +1,30 @@
 import { compose, createStore, applyMiddleware, combineReducers } from 'redux';
+import { AsyncStorage as storage } from 'react-native';
 import thunkMiddleware from 'redux-thunk';
-import { persistStore, persistReducer } from 'redux-persist';
-import { AsyncStorage } from 'react-native';
+import { persistReducer, persistStore } from 'redux-persist';
+import immutableTransform from 'redux-persist-transform-immutable';
 
-import exchanges from './modules/exchanges';
+import exchanges, { ExchangeRecord } from './modules/exchanges';
 
 const middlewares = [thunkMiddleware];
 
-const exchangesPersistConfig = {
-  key: 'exchanges',
-  storage: AsyncStorage,
+const persistConfig = {
+  transforms: [immutableTransform({ records: [ExchangeRecord] })],
+  key: 'root',
+  storage,
 };
 
-const reducer = combineReducers({
-  exchanges: persistReducer(exchangesPersistConfig, exchanges),
-});
+const reducers = {
+  exchanges,
+};
+
+const reducer = combineReducers(reducers);
+const persistedReducer = persistReducer(persistConfig, reducer);
 
 const store = compose(
   applyMiddleware(...middlewares),
   global.reduxNativeDevTools ? global.reduxNativeDevTools() : noop => noop,
-)(createStore)(reducer);
-
-export const persistor = persistStore(store);
+)(createStore)(persistedReducer);
 
 export default store;
+export const persistor = persistStore(store);

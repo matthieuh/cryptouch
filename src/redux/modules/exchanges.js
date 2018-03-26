@@ -1,6 +1,8 @@
 import { handleActions } from 'redux-actions';
 import moment from 'moment';
-import { get, reduce } from 'lodash';
+import { reduce } from 'lodash';
+import { fromJS, List, Map, Record } from 'immutable';
+import { createSelector } from 'reselect';
 import {
   isExchangeAvailable,
   fetchBalance,
@@ -19,6 +21,21 @@ const COUNT_BALANCE_REQUEST = 'exchanges/COUNT_BALANCE_REQUEST';
 const COUNT_BALANCE_SUCCESS = 'exchanges/COUNT_BALANCE_SUCCESS';
 const COUNT_BALANCE_FAILURE = 'exchanges/COUNT_BALANCE_FAILURE';
 
+// Selectors
+const stateSelector = state => (state.get ? state.get('exchanges') : state.exchanges);
+export const getSyncedExchanges = createSelector([stateSelector], state => state.get('synced'));
+export const getBalances = createSelector([stateSelector], state =>
+  state.getIn(['balances', 'kraken', 0, 'balance']));
+export const getLastUpdate = createSelector([stateSelector], state =>
+  state.getIn(['balances', 'kraken', 0, 'at']));
+export const getTotalBalancesValue = createSelector([stateSelector], state =>
+  state.getIn(['totalBalancesValues', 0, 'value']));
+export const getTopPrices = createSelector([stateSelector], state =>
+  state.getIn(['balances', 'kraken', 0, 'topPrices']));
+
+export const getCurrentCurrency = createSelector([stateSelector], state =>
+  state.get('currentCurrency'));
+
 export const add = name => (dispatch) => {
   dispatch({ type: ADD_REQUEST });
   const isAvailable = isExchangeAvailable(name);
@@ -32,15 +49,7 @@ export const countBalancesValue = balances => async (dispatch) => {
     const totalBalancesValue = reduce(
       balances,
       (total, b) => {
-        const currentTotal = reduce(
-          b.btcBalance,
-          (cTotal, btcB = 0) => {
-            console.log('btcB', btcB, cTotal);
-            return cTotal + btcB;
-          },
-          0,
-        );
-        console.log('currentTotal', currentTotal);
+        const currentTotal = reduce(b.btcBalance, (cTotal, btcB = 0) => cTotal + btcB, 0);
         return total + currentTotal;
       },
       0,
@@ -55,7 +64,7 @@ export const fetchBalances = () => async (dispatch, getState) => {
   dispatch({ type: FETCH_BALANCE_REQUEST });
 
   try {
-    const { exchanges: { synced } } = getState();
+    const synced = getSyncedExchanges(getState()).toJS();
     const tasks = synced.map(async exchangeName => fetchBalance(exchangeName));
 
     if (!tasks.length) {
@@ -90,8 +99,21 @@ export const fetchBalances = () => async (dispatch, getState) => {
   }
 };
 
+const ExchangeRecord = Record(
+  {
+    synced: ['kraken'],
+    currentCurrency: 'EUR',
+    balances: {},
+    totalBalancesValues: [],
+    errorMessage: null,
+    adding: false,
+    fetchingBalance: false,
+  },
+  'Exchange',
+);
+
 // State
-const initialState = {
+const initialState = fromJS({
   synced: ['kraken'],
   currentCurrency: 'EUR',
   balances: {},
@@ -99,78 +121,40 @@ const initialState = {
   errorMessage: null,
   adding: false,
   fetchingBalance: false,
-};
+});
 
 // Reducers
 export default handleActions(
   {
-    [ADD_REQUEST]: state => ({
-      ...state,
-      adding: true,
-    }),
-    [ADD_SUCCESS]: (state, action) => ({
-      ...state,
-      synced: [...state.arr, action.exchangeName],
-      adding: false,
-    }),
-    [ADD_FAILURE]: (state, action) => ({
-      ...state,
-      errorMessage: action.message,
-      adding: false,
-    }),
-    [FETCH_BALANCE_REQUEST]: state => ({
-      ...state,
-      errorMessage: null,
-      fetchingBalance: true,
-    }),
-    [FETCH_BALANCE_SUCCESS]: (state, action) => ({
-      ...state,
-      balances: reduce(
-        action.balances,
-        (res, b, bName) => {
-          const newRes = res;
-          (newRes[bName] = []).push(b);
-          return newRes;
-        },
-        state.balances,
-      ),
-      fetchingBalance: false,
-    }),
-    [FETCH_BALANCE_FAILURE]: (state, action) => ({
-      ...state,
-      errorMessage: action.message,
-      fetchingBalance: false,
-    }),
-    [COUNT_BALANCE_REQUEST]: state => ({
-      ...state,
-      errorMessage: null,
-      countingBalance: true,
-    }),
-    [COUNT_BALANCE_SUCCESS]: (state, action) => ({
-      ...state,
-      totalBalancesValues: [
-        {
-          at: moment().format(),
-          value: action.totalBalancesValue,
-        },
-        ...state.totalBalancesValues,
-      ],
-      countingBalance: false,
-    }),
-    [COUNT_BALANCE_FAILURE]: (state, action) => ({
-      ...state,
-      errorMessage: action.message,
-      countingBalance: false,
-    }),
+    [ADD_REQUEST]: state => state.set('adding', true),
+    [ADD_SUCCESS]: (state, action) =>
+      state.update('synced', list => list.push(action.exchangeName)).set('adding', false),
+    [ADD_FAILURE]: (state, action) =>
+      state.set('errorMessage', action.message).set('adding', false),
+    [FETCH_BALANCE_REQUEST]: state => state.set('errorMessage', null).set('fetchingBalance', null),
+    [FETCH_BALANCE_SUCCESS]: (state, action) =>
+      fromJS(action.balances)
+        .reduce(
+          (acc, b, bName) => acc.updateIn(['balances', bName], l => (l || List()).push(fromJS(b))),
+          state,
+        )
+        .set('fetchingBalance', false),
+    [FETCH_BALANCE_FAILURE]: (state, action) =>
+      state.set('errorMessage', action.message).set('fetchingBalance', false),
+    [COUNT_BALANCE_REQUEST]: state => state.set('errorMessage', null).set('fetchingBalance', true),
+    [COUNT_BALANCE_SUCCESS]: (state, action) =>
+      state
+        .update('totalBalancesValues', l =>
+          (l || List()).set(
+            0,
+            Map({
+              at: moment().format(),
+              value: action.totalBalancesValue,
+            }),
+          ))
+        .set('countingBalance', false),
+    [COUNT_BALANCE_FAILURE]: (state, action) =>
+      state.set('errorMessage', action.message).set('countingBalance', false),
   },
   initialState,
 );
-
-// Selectors
-export const getExchanges = ({ exchanges }) => exchanges.synced;
-export const getBalances = ({ exchanges }) => get(exchanges, 'balances[0].balance');
-export const getLastUpdate = ({ exchanges }) => get(exchanges, 'balances[0].at');
-export const getTotalBalancesValue = ({ exchanges }) =>
-  get(exchanges, 'totalBalancesValues[0].value');
-export const getTopPrices = ({ exchanges }) => get(exchanges, 'balances.kraken.[0].topPrices');
-export const getCurrentCurrency = ({ exchanges }) => exchanges.currentCurrency;
