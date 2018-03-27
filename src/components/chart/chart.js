@@ -1,12 +1,12 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { AreaChart, Path } from 'react-native-svg-charts';
-import * as shape from 'd3-shape';
+// import * as shape from 'd3-shape';
 
 // import styles from './styles';
 
 const propTypes = {
-  data: PropTypes.arrayOf(PropTypes.number),
+  // data: PropTypes.arrayOf(PropTypes.number),
 };
 
 const defaultProps = {

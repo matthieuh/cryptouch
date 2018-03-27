@@ -99,7 +99,7 @@ export const fetchBalances = () => async (dispatch, getState) => {
   }
 };
 
-const ExchangeRecord = Record(
+export const ExchangeRecord = Record(
   {
     synced: ['kraken'],
     currentCurrency: 'EUR',

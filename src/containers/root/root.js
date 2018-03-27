@@ -57,7 +57,7 @@ class Root extends Component {
 
   componentDidMount() {
     this.props.fetchBalances();
-    this.tick = setInterval(this.props.fetchBalances, 3 * 60 * 1000);
+    // this.tick = setInterval(this.props.fetchBalances, 3 * 60 * 1000);
   }
 
   handleAddPress = () => {
@@ -94,7 +94,7 @@ class Root extends Component {
         <FloatingButton onPress={this.handleAddPress}>Add</FloatingButton>
         <Modal isVisible={addModalVisible}>
           <View>
-            <Text>Add </Text>
+            <Text>Add</Text>
           </View>
         </Modal>
       </View>
