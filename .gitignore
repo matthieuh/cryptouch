@@ -55,5 +55,3 @@ buck-out/
 # cache
 #
 .eslintcache
-
-.env*
