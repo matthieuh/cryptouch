@@ -6,9 +6,11 @@ import { createSelector } from 'reselect';
 import {
   isExchangeAvailable,
   fetchBalance,
+  fetchOHLCV,
   getTopPrices as getPrices,
   getBalanceIn,
 } from '../../utils/exchanges';
+import nearest from 'nearest-date';
 
 // Actions
 const ADD_REQUEST = 'exchanges/ADD_REQUEST';
@@ -20,12 +22,19 @@ const FETCH_BALANCE_FAILURE = 'exchanges/FETCH_BALANCE_FAILURE';
 const COUNT_BALANCE_REQUEST = 'exchanges/COUNT_BALANCE_REQUEST';
 const COUNT_BALANCE_SUCCESS = 'exchanges/COUNT_BALANCE_SUCCESS';
 const COUNT_BALANCE_FAILURE = 'exchanges/COUNT_BALANCE_FAILURE';
+const FETCH_CHART_DATA_REQUEST = 'exchanges/FETCH_CHART_DATA_REQUEST';
+const FETCH_CHART_DATA_SUCCESS = 'exchanges/FETCH_CHART_DATA_SUCCESS';
+const FETCH_CHART_DATA_FAILURE = 'exchanges/FETCH_CHART_DATA_FAILURE';
 
 // Selectors
 const stateSelector = state => (state.get ? state.get('exchanges') : state.exchanges);
 export const getSyncedExchanges = createSelector([stateSelector], state => state.get('synced'));
 export const getBalances = createSelector([stateSelector], state =>
   state.getIn(['balances', 'kraken', 0, 'balance']));
+export const getChartData = createSelector([stateSelector], (state) => {
+  const chartData = state.get('chartData');
+  return chartData ? chartData.toJS() : [];
+});
 export const getLastUpdate = createSelector([stateSelector], state =>
   state.getIn(['balances', 'kraken', 0, 'at']));
 export const getTotalBalancesValue = createSelector([stateSelector], state =>
@@ -99,6 +108,28 @@ export const fetchBalances = () => async (dispatch, getState) => {
   }
 };
 
+export const fetchChartData = () => async (dispatch, getState) => {
+  try {
+    dispatch({ type: FETCH_CHART_DATA_REQUEST });
+    const ohlcv = await fetchOHLCV('kraken');
+    const totalBalancesValues = stateSelector(getState())
+      .get('totalBalancesValues')
+      .toJS();
+
+    const times = ohlcv.map(d => new Date(d[0]));
+
+    const res = totalBalancesValues.reverse().map((tb) => {
+      const tbDate = new Date(tb.at);
+      const index = nearest(times, tbDate);
+      return ohlcv[index][4] * tb.value;
+    });
+
+    dispatch({ type: FETCH_CHART_DATA_SUCCESS, payload: res });
+  } catch (error) {
+    dispatch({ type: FETCH_CHART_DATA_FAILURE, message: error.message });
+  }
+};
+
 export const ExchangeRecord = Record(
   {
     synced: ['kraken'],
@@ -121,6 +152,8 @@ const initialState = fromJS({
   errorMessage: null,
   adding: false,
   fetchingBalance: false,
+  fetchingChartData: false,
+  chartData: null,
 });
 
 // Reducers
@@ -131,7 +164,7 @@ export default handleActions(
       state.update('synced', list => list.push(action.exchangeName)).set('adding', false),
     [ADD_FAILURE]: (state, action) =>
       state.set('errorMessage', action.message).set('adding', false),
-    [FETCH_BALANCE_REQUEST]: state => state.set('errorMessage', null).set('fetchingBalance', null),
+    [FETCH_BALANCE_REQUEST]: state => state.set('errorMessage', null).set('fetchingBalance', true),
     [FETCH_BALANCE_SUCCESS]: (state, action) =>
       fromJS(action.balances)
         .reduce(
@@ -145,16 +178,19 @@ export default handleActions(
     [COUNT_BALANCE_SUCCESS]: (state, action) =>
       state
         .update('totalBalancesValues', l =>
-          (l || List()).set(
-            0,
-            Map({
-              at: moment().format(),
-              value: action.totalBalancesValue,
-            }),
-          ))
+          (l || List()).unshift(Map({
+            at: moment().format(),
+            value: action.totalBalancesValue,
+          })))
         .set('countingBalance', false),
     [COUNT_BALANCE_FAILURE]: (state, action) =>
       state.set('errorMessage', action.message).set('countingBalance', false),
+    [FETCH_CHART_DATA_REQUEST]: state =>
+      state.set('errorMessage', null).set('fetchingChartData', true),
+    [FETCH_CHART_DATA_SUCCESS]: (state, action) =>
+      state.set('chartData', fromJS(action.payload)).set('fetchingChartData', false),
+    [FETCH_CHART_DATA_FAILURE]: (state, action) =>
+      state.set('errorMessage', action.message).set('fetchingChartData', false),
   },
   initialState,
 );

@@ -1,9 +1,8 @@
 import React from 'react';
+import { View } from 'react-native';
 import PropTypes from 'prop-types';
-import { AreaChart, Path } from 'react-native-svg-charts';
-// import * as shape from 'd3-shape';
-
-// import styles from './styles';
+import { AreaChart, Path, XAxis, YAxis } from 'react-native-svg-charts';
+import * as scale from 'd3-scale';
 
 const propTypes = {
   // data: PropTypes.arrayOf(PropTypes.number),
@@ -21,17 +20,36 @@ const ExtraLine = ({ line }) => <Path key="line " d={line} stroke="rgb(253, 44, 
 ExtraLine.propTypes = LinePropTypes;
 
 const FloatingButton = ({ data, ...restProps }) => (
-  <AreaChart
-    style={{ height: 220 }}
-    data={data}
-    contentInset={{ top: 20, bottom: 20 }}
-    showGrid={false}
-    svg={{ fill: 'rgba(253, 44, 96, 0.2)' }}
-    // curve={shape.curveNatural}
-    extras={[ExtraLine]}
-    animate
-    {...restProps}
-  />
+  <View style={{ height: 200, flexDirection: 'row' }}>
+    {/* <YAxis
+      data={data}
+      contentInset={{ top: 20, bottom: 20 }}
+      svg={{
+        fill: 'white',
+        fontSize: 10,
+      }}
+      numberOfTicks={10}
+      formatLabel={value => value}
+    /> */}
+    <AreaChart
+      style={{ height: 220, flex: 1 }}
+      data={data}
+      contentInset={{ top: 20, bottom: 20 }}
+      showGrid={false}
+      svg={{ fill: 'rgba(253, 44, 96, 0.2)' }}
+      // curve={shape.curveNatural}
+      extras={[ExtraLine]}
+      animate
+      {...restProps}
+    />
+    {/* <XAxis
+      style={{ marginTop: 10 }}
+      data={data}
+      scale={scale.scaleBand}
+      xAccessor={v => v}
+      svg={{ fontWeight: 'bold' }}
+    /> */}
+  </View>
 );
 
 FloatingButton.defaultProps = defaultProps;

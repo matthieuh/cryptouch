@@ -48,3 +48,20 @@ export const fetchBalance = (exchangeName) => {
 
   throw new Error('Error fetching balance.');
 };
+
+export const fetchOHLCV = async (exchangeName) => {
+  if (!isExchangeAvailable(exchangeName)) {
+    throw new Error('This exchange is not available yet');
+  }
+
+  if (ccxtExchanges.includes(exchangeName)) {
+    const exchange = new ccxt[exchangeName]();
+    exchange.apiKey = Config.KRAKEN_API_KEY;
+    exchange.secret = Config.KRAKEN_SECRET;
+    await exchange.loadMarkets();
+
+    return exchange.fetchOHLCV('BTC/EUR', '1h');
+  }
+
+  throw new Error('Error fetching OHLCV.');
+};

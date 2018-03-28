@@ -3,10 +3,13 @@ import { View, Text } from 'react-native';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
+import moment from 'moment';
 import SafeAreaView from 'react-native-safe-area-view';
 
 import {
   fetchBalances,
+  fetchChartData,
+  getChartData,
   getTotalBalancesValue,
   getTopPrices,
   getCurrentCurrency,
@@ -27,14 +30,17 @@ const mapStateToProps = state => ({
   topPrices: getTopPrices(state),
   currentCurrency: getCurrentCurrency(state),
   syncedExchanges: getSyncedExchanges(state),
+  chartData: getChartData(state),
 });
 
-const mapDispatchToProps = dispatch => bindActionCreators({ fetchBalances }, dispatch);
+const mapDispatchToProps = dispatch =>
+  bindActionCreators({ fetchBalances, fetchChartData }, dispatch);
 
 class Root extends Component {
   static propTypes = {
     currentCurrency: PropTypes.string.isRequired,
     fetchBalances: PropTypes.func.isRequired,
+    fetchChartData: PropTypes.func.isRequired,
     lastUpdate: PropTypes.string,
     syncedExchanges: PropTypes.shape({}),
     topPrices: PropTypes.shape({}),
@@ -55,9 +61,10 @@ class Root extends Component {
     };
   }
 
-  componentDidMount() {
-    this.props.fetchBalances();
-    // this.tick = setInterval(this.props.fetchBalances, 3 * 60 * 1000);
+  async componentDidMount() {
+    this.props.fetchChartData();
+    await this.props.fetchBalances();
+    this.props.fetchChartData();
   }
 
   handleAddPress = () => {
@@ -66,6 +73,7 @@ class Root extends Component {
 
   render() {
     const {
+      chartData,
       totalBalancesValue,
       lastUpdate,
       topPrices,
@@ -73,7 +81,6 @@ class Root extends Component {
       syncedExchanges,
     } = this.props;
     const { addModalVisible } = this.state;
-    const chartData = [50, 10, 40, 95, 85, 91, 35, 53, 24, 50];
     return (
       <View style={styles.container}>
         <View style={styles.chartContainer}>
@@ -84,10 +91,8 @@ class Root extends Component {
               currency={currentCurrency}
             />
             <Chart data={chartData} />
-            <Text style={{ color: 'white' }}>
-              Last Update: {JSON.stringify(lastUpdate)} - {JSON.stringify(topPrices)} -{' '}
-              {JSON.stringify(totalBalancesValue)} - {JSON.stringify(currentCurrency)} -{' '}
-              {syncedExchanges}
+            <Text style={{ flex: 1, color: 'white', textAlign: 'center' }}>
+              Last Update: {moment(lastUpdate).fromNow()}
             </Text>
           </SafeAreaView>
         </View>

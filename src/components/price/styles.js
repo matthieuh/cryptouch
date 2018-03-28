@@ -14,10 +14,6 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     letterSpacing: 8,
   },
-  currencyText: {
-    color: 'white',
-    fontSize: 20,
-  },
 });
 
 export default styles;

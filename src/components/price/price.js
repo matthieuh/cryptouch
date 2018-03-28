@@ -21,8 +21,13 @@ const Price = ({
   const price = currencyInBtc * btcAmount;
   return (
     <View {...props} style={[styles.container, style]}>
-      <Text style={styles.amountText}>{price && price.toFixed(2)}</Text>
-      <Text style={styles.currencyText}>€</Text>
+      <Text style={styles.amountText}>
+        {price &&
+          price.toLocaleString('en-US', {
+            style: 'currency',
+            currency,
+          })}
+      </Text>
     </View>
   );
 };
