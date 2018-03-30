@@ -1,4 +1,4 @@
-package com.cryptouch;
+package com.matthieuh.cryptouch;
 
 import com.facebook.react.ReactActivity;
 
