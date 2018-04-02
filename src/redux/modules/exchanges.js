@@ -7,6 +7,7 @@ import nearest from 'nearest-date';
 import {
   isExchangeAvailable,
   fetchBalance,
+  fetchTradeHistory,
   fetchOHLCV,
   getTopPrices as getPrices,
   getBalanceIn,
@@ -71,6 +72,8 @@ export const countBalancesValue = balances => async (dispatch) => {
 
 export const fetchBalances = () => async (dispatch, getState) => {
   dispatch({ type: FETCH_BALANCE_REQUEST });
+
+  await fetchTradeHistory('kraken');
 
   try {
     const synced = getSyncedExchanges(getState()).toJS();

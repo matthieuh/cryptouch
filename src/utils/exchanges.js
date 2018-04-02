@@ -47,7 +47,15 @@ export const fetchBalance = (exchangeName) => {
   throw new Error('Error fetching balance.');
 };
 
-export const fetchTradeHistory = async () => {};
+export const fetchTradeHistory = async (exchangeName) => {
+  console.log('fetchTradeHistory', exchangeName);
+  const exchange = new ccxt[exchangeName]();
+  exchange.apiKey = Config.KRAKEN_API_KEY;
+  exchange.secret = Config.KRAKEN_SECRET;
+
+  const orders = await exchange.fetchOrders('BTC');
+  console.log('orders', orders);
+};
 
 export const fetchOHLCV = async (exchangeName) => {
   if (!isExchangeAvailable(exchangeName)) {

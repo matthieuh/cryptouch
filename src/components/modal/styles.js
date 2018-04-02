@@ -5,7 +5,7 @@ const styles = StyleSheet.create({
     position: 'relative',
     flex: 1,
     marginHorizontal: 8,
-    marginVertical: 24,
+    marginVertical: 18,
     padding: 40,
     backgroundColor: 'white',
     borderRadius: 16,

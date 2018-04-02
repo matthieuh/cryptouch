@@ -63,7 +63,7 @@ class Root extends Component {
   }
 
   async componentDidMount() {
-    // this.props.fetchChartData();
+    this.props.fetchChartData();
     await this.props.fetchBalances();
     this.props.fetchChartData();
   }
@@ -100,7 +100,12 @@ class Root extends Component {
         <Button onPress={this.toggleModalVisibility} floating>
           Add
         </Button>
-        <Modal isVisible={addModalVisible}>
+        <Modal
+          isVisible={addModalVisible}
+          onBackdropPress={this.toggleModalVisibility}
+          onBackButtonPress={this.toggleModalVisibility}
+          onCloseButtonPress={this.toggleModalVisibility}
+        >
           <AddExchangeForm onSubmit={this.toggleModalVisibility} />
         </Modal>
       </View>

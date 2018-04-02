@@ -9,10 +9,16 @@ class Modal extends Component {
   static propTypes = {
     children: PropTypes.node,
     isVisible: PropTypes.bool,
+    onBackdropPress: PropTypes.func,
+    onBackButtonPress: PropTypes.func,
+    onCloseButtonPress: PropTypes.func,
   };
   static defaultProps = {
     children: <View />,
     isVisible: false,
+    onBackdropPress: () => {},
+    onBackButtonPress: () => {},
+    onCloseButtonPress: () => {},
   };
 
   constructor(props) {
@@ -31,18 +37,27 @@ class Modal extends Component {
 
   hideModal = () => {
     this.setState({ modalVisible: false });
+    this.props.onCloseButtonPress();
   };
 
   render() {
-    const { children, ...restProps } = this.props;
+    const {
+      children, onBackdropPress, onBackButtonPress, ...restProps
+    } = this.props;
     const { modalVisible } = this.state;
     return (
       <RNModal
         {...restProps}
         backdropOpacity={0.1}
         isVisible={modalVisible}
-        onBackdropPress={this.hideModal}
-        onBackButtonPress={this.hideModal}
+        onBackdropPress={() => {
+          this.hideModal();
+          onBackdropPress();
+        }}
+        onBackButtonPress={() => {
+          this.hideModal();
+          onBackButtonPress();
+        }}
       >
         <View style={styles.container}>
           <TouchableOpacity onPress={this.hideModal} style={styles.closeButton}>
