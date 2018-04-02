@@ -1,8 +1,9 @@
 import { handleActions } from 'redux-actions';
-import moment from 'moment';
 import { reduce } from 'lodash';
 import { fromJS, List, Map, Record } from 'immutable';
 import { createSelector } from 'reselect';
+import moment from 'moment';
+import nearest from 'nearest-date';
 import {
   isExchangeAvailable,
   fetchBalance,
@@ -10,7 +11,6 @@ import {
   getTopPrices as getPrices,
   getBalanceIn,
 } from '../../utils/exchanges';
-import nearest from 'nearest-date';
 
 // Actions
 const ADD_REQUEST = 'exchanges/ADD_REQUEST';

@@ -3,6 +3,7 @@ import { AsyncStorage as storage } from 'react-native';
 import thunkMiddleware from 'redux-thunk';
 import { persistReducer, persistStore } from 'redux-persist';
 import immutableTransform from 'redux-persist-transform-immutable';
+import { reducer as form } from 'redux-form';
 
 import exchanges, { ExchangeRecord } from './modules/exchanges';
 
@@ -16,6 +17,7 @@ const persistConfig = {
 
 const reducers = {
   exchanges,
+  form,
 };
 
 const reducer = combineReducers(reducers);

@@ -9,16 +9,26 @@ import styles from './styles';
 const propTypes = {
   children: PropTypes.node,
   style: ViewPropTypes.style,
+  floating: PropTypes.bool,
 };
 
 const defaultProps = {
   children: null,
   style: null,
+  floating: false,
 };
 
-const FloatingButton = ({ children, style, ...props }) => (
-  <TouchableOpacity {...props} style={[styles.container, style]}>
-    <LinearGradient colors={['#FD2C60', '#F1577D']} style={[styles.content]}>
+const FloatingButton = ({
+  children, floating, style, ...props
+}) => (
+  <TouchableOpacity
+    {...props}
+    style={[styles.container, floating && styles.floatingContainer, style]}
+  >
+    <LinearGradient
+      colors={['#FD2C60', '#F1577D']}
+      style={[styles.content, floating && styles.floatingContent]}
+    >
       {isString(children) ? <Text style={[styles.text]}>{children.toUpperCase()}</Text> : children}
     </LinearGradient>
   </TouchableOpacity>

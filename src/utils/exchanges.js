@@ -1,8 +1,6 @@
 import ccxt from 'ccxt';
 import Config from 'react-native-config';
 
-console.log('Config', Config);
-
 export const availableExchanges = ['kraken'];
 export const ccxtExchanges = ['kraken'];
 
@@ -48,6 +46,8 @@ export const fetchBalance = (exchangeName) => {
 
   throw new Error('Error fetching balance.');
 };
+
+export const fetchTradeHistory = async () => {};
 
 export const fetchOHLCV = async (exchangeName) => {
   if (!isExchangeAvailable(exchangeName)) {

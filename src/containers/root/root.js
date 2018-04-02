@@ -17,9 +17,10 @@ import {
   getSyncedExchanges,
 } from '../../redux/modules/exchanges';
 
-import Modal from '../../components/modal';
+import AddExchangeForm from '../../containers/add-exchange-form';
 import Chart from '../../components/chart';
-import FloatingButton from '../../components/floating-button';
+import Button from '../../components/button';
+import Modal from '../../components/modal';
 import Price from '../../components/price';
 
 import styles from './styles';
@@ -62,13 +63,13 @@ class Root extends Component {
   }
 
   async componentDidMount() {
-    this.props.fetchChartData();
+    // this.props.fetchChartData();
     await this.props.fetchBalances();
     this.props.fetchChartData();
   }
 
-  handleAddPress = () => {
-    this.setState({ addModalVisible: true });
+  toggleModalVisibility = () => {
+    this.setState({ addModalVisible: !this.state.addModalVisible });
   };
 
   render() {
@@ -96,11 +97,11 @@ class Root extends Component {
             </Text>
           </SafeAreaView>
         </View>
-        <FloatingButton onPress={this.handleAddPress}>Add</FloatingButton>
+        <Button onPress={this.toggleModalVisibility} floating>
+          Add
+        </Button>
         <Modal isVisible={addModalVisible}>
-          <View>
-            <Text>Add</Text>
-          </View>
+          <AddExchangeForm onSubmit={this.toggleModalVisibility} />
         </Modal>
       </View>
     );

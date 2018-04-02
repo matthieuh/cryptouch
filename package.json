@@ -31,7 +31,8 @@
     "react-test-renderer": "16.2.0"
   },
   "scripts": {
-    "lint": "eslint --cache --ignore-path .gitignore --format=node_modules/eslint-formatter-pretty . ",
+    "lint":
+      "eslint --cache --ignore-path .gitignore --format=node_modules/eslint-formatter-pretty . ",
     "start": "react-native start",
     "android": "react-native run-android",
     "ios": "cross-env ENVFILE=.env.dev react-native run-ios",
@@ -44,7 +45,8 @@
     "preset": "react-native"
   },
   "dependencies": {
-    "ccxt": "^1.11.63",
+    "ccxt": "^1.12.62",
+    "color": "3.0.0",
     "d3-scale": "2.0.0",
     "d3-shape": "^1.2.0",
     "immutable": "^4.0.0-rc.9",
@@ -65,6 +67,7 @@
     "redux": "^3.7.2",
     "redux-actions": "^2.2.1",
     "redux-api-middleware": "^2.2.0",
+    "redux-form": "7.3.0",
     "redux-immutable": "^4.0.0",
     "redux-persist": "^5.9.1",
     "redux-persist-transform-immutable": "^5.0.0",
