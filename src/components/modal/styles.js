@@ -3,10 +3,10 @@ import { StyleSheet } from 'react-native';
 const styles = StyleSheet.create({
   container: {
     position: 'relative',
-    flex: 1,
     marginHorizontal: 8,
-    marginVertical: 18,
+    marginVertical: 16,
     padding: 40,
+    paddingTop: 56,
     backgroundColor: 'white',
     borderRadius: 16,
     shadowColor: '#6F6F6F',
@@ -16,12 +16,12 @@ const styles = StyleSheet.create({
   },
   closeButton: {
     position: 'absolute',
-    top: 6,
-    right: 10,
+    top: 10,
+    right: 16,
   },
   closeButtonText: {
     color: '#FD2C60',
-    fontSize: 26,
+    fontSize: 40,
   },
 });
 

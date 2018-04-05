@@ -31,8 +31,7 @@
     "react-test-renderer": "16.2.0"
   },
   "scripts": {
-    "lint":
-      "eslint --cache --ignore-path .gitignore --format=node_modules/eslint-formatter-pretty . ",
+    "lint": "eslint --cache --ignore-path .gitignore --format=node_modules/eslint-formatter-pretty . ",
     "start": "react-native start",
     "android": "react-native run-android",
     "ios": "cross-env ENVFILE=.env.dev react-native run-ios",
@@ -52,11 +51,13 @@
     "immutable": "^4.0.0-rc.9",
     "lodash": "^4.17.5",
     "moment": "^2.21.0",
+    "native-base": "2.4.1",
     "nearest-date": "1.0.1",
     "prop-types": "^15.6.0",
     "react": "^16.2.0",
     "react-native": "^0.52.0",
     "react-native-config": "^0.11.5",
+    "react-native-deck-swiper": "1.4.9",
     "react-native-fast-image": "^2.2.5",
     "react-native-linear-gradient": "^2.4.0",
     "react-native-modal": "^5.2.0",

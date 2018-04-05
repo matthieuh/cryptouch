@@ -73,7 +73,7 @@ export const countBalancesValue = balances => async (dispatch) => {
 export const fetchBalances = () => async (dispatch, getState) => {
   dispatch({ type: FETCH_BALANCE_REQUEST });
 
-  await fetchTradeHistory('kraken');
+  // await fetchTradeHistory('kraken');
 
   try {
     const synced = getSyncedExchanges(getState()).toJS();

@@ -9,6 +9,8 @@ class Modal extends Component {
   static propTypes = {
     children: PropTypes.node,
     isVisible: PropTypes.bool,
+    fullSize: PropTypes.bool,
+    height: PropTypes.number,
     onBackdropPress: PropTypes.func,
     onBackButtonPress: PropTypes.func,
     onCloseButtonPress: PropTypes.func,
@@ -16,6 +18,8 @@ class Modal extends Component {
   static defaultProps = {
     children: <View />,
     isVisible: false,
+    fullSize: false,
+    height: 400,
     onBackdropPress: () => {},
     onBackButtonPress: () => {},
     onCloseButtonPress: () => {},
@@ -42,13 +46,18 @@ class Modal extends Component {
 
   render() {
     const {
-      children, onBackdropPress, onBackButtonPress, ...restProps
+      children,
+      onBackdropPress,
+      onBackButtonPress,
+      fullSize,
+      height,
+      ...restProps
     } = this.props;
     const { modalVisible } = this.state;
     return (
       <RNModal
         {...restProps}
-        backdropOpacity={0.1}
+        backdropOpacity={0.3}
         isVisible={modalVisible}
         onBackdropPress={() => {
           this.hideModal();
@@ -59,7 +68,7 @@ class Modal extends Component {
           onBackButtonPress();
         }}
       >
-        <View style={styles.container}>
+        <View style={[styles.container, fullSize ? { flex: 1 } : { height }]}>
           <TouchableOpacity onPress={this.hideModal} style={styles.closeButton}>
             <Text style={styles.closeButtonText}>&#10005;</Text>
           </TouchableOpacity>
