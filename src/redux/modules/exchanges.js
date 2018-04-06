@@ -5,7 +5,6 @@ import { createSelector } from 'reselect';
 import moment from 'moment';
 import nearest from 'nearest-date';
 import {
-  isExchangeAvailable,
   fetchBalance,
   fetchTradeHistory,
   fetchOHLCV,
@@ -31,6 +30,7 @@ const FETCH_CHART_DATA_FAILURE = 'exchanges/FETCH_CHART_DATA_FAILURE';
 const initialStateJS = {
   synced: {},
   currentCurrency: 'EUR',
+  currentScope: 'kraken',
   balances: {},
   totalBalancesValues: [],
   errorMessage: null,
@@ -44,9 +44,14 @@ export const ExchangeRecord = Record(initialStateJS, 'Exchange');
 
 // Selectors
 const stateSelector = state => (state.get ? state.get('exchanges') : state.exchanges);
+export const getCurrentScope = createSelector([stateSelector], state => state.get('currentScope'));
 export const getSyncedExchanges = createSelector([stateSelector], state => state.get('synced'));
-export const getSyncedExchange = exchangeName =>
-  createSelector([stateSelector], state => state.getIn(['synced', exchangeName]));
+export const getSyncedExchange = createSelector([stateSelector], (state) => {
+  const scope = state.get('currentScope');
+  console.log('getSyncedExchange', state);
+  console.log('CurrentScope', scope);
+  return state.getIn(['synced', scope]);
+});
 export const getBalances = createSelector([stateSelector], state =>
   state.getIn(['balances', 'kraken', 0, 'balance']));
 export const getChartData = createSelector([stateSelector], (state) => {
@@ -83,8 +88,10 @@ export const countBalancesValue = balances => async (dispatch) => {
 
 export const fetchBalances = () => async (dispatch, getState) => {
   dispatch({ type: FETCH_BALANCE_REQUEST });
-  // const config = getSyncedExchange(getState(), 'kraken');
-  // await fetchTradeHistory('kraken', config);
+  console.log('getState()', getState());
+  const currentExchangeConf = getSyncedExchange(getState());
+  console.log('currentExchangeConf', currentExchangeConf);
+  await fetchTradeHistory('kraken', currentExchangeConf);
 
   try {
     const synced = getSyncedExchanges(getState()).toJS();
@@ -127,7 +134,7 @@ export const fetchBalances = () => async (dispatch, getState) => {
 export const fetchChartData = () => async (dispatch, getState) => {
   try {
     dispatch({ type: FETCH_CHART_DATA_REQUEST });
-    const config = getSyncedExchange(getState(), 'kraken');
+    const config = getSyncedExchange(getState());
     const ohlcv = await fetchOHLCV('kraken', config);
     const totalBalancesValues = stateSelector(getState())
       .get('totalBalancesValues')

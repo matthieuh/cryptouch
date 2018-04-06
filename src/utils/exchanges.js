@@ -53,12 +53,12 @@ export const fetchBalance = (exchangeName, { apiKey, apiSecret }) => {
 };
 
 export const fetchTradeHistory = async (exchangeName, { apiKey, apiSecret }) => {
-  console.log('fetchTradeHistory', exchangeName);
+  console.log('fetchTradeHistory', exchangeName, apiKey, apiSecret);
   const exchange = new ccxt[exchangeName]();
   exchange.apiKey = apiKey;
   exchange.secret = apiSecret;
 
-  const orders = await exchange.fetchOrders('BTC');
+  const orders = await exchange.fetchMyTrades('BTC');
   console.log('orders', orders);
 };
 
