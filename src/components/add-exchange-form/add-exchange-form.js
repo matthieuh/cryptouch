@@ -1,19 +1,25 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { Text, View } from 'react-native';
-import { Field } from 'redux-form';
-import { Body, Picker, Item, Input, Title } from 'native-base';
+import { Field } from 'redux-form/immutable';
+import { Picker, Item, Input } from 'native-base';
 import Button from '../../components/button';
 
 import styles from './styles';
 
+const required = value => (value ? undefined : 'Required');
+
 const renderInput = ({
-  input, label, placeholder, type, meta: { touched, error, warning },
+  input,
+  label,
+  placeholder,
+  type,
+  meta: {
+    touched, error, warning, submitFailed,
+  },
 }) => {
-  let hasError = false;
-  if (error !== undefined) {
-    hasError = true;
-  }
+  const hasError = error && submitFailed;
+
   return (
     <Item error={hasError}>
       <Input {...input} placeholder={placeholder} />
@@ -23,12 +29,9 @@ const renderInput = ({
 };
 
 const renderSelect = ({
-  input, label, meta: { touched, error }, ...restProps
+  input, label, meta: { touched, error, submitFailed }, ...restProps
 }) => {
-  let hasError = false;
-  if (error !== undefined) {
-    hasError = true;
-  }
+  const hasError = error && submitFailed;
   return (
     <Item error={hasError}>
       <Picker
@@ -77,15 +80,21 @@ class AddExchangeForm extends Component {
     return (
       <View style={styles.container}>
         <Field
-          name="exchange"
+          name="name"
           component={renderSelect}
           placeholder="Exchange"
           iosHeader="Select one"
+          validate={[required]}
         >
           {exchangeItems}
         </Field>
-        <Field name="apiKey" component={renderInput} placeholder="API key" />
-        <Field name="apiSecret" component={renderInput} placeholder="API secret" />
+        <Field name="apiKey" component={renderInput} placeholder="API key" validate={[required]} />
+        <Field
+          name="apiSecret"
+          component={renderInput}
+          placeholder="API secret"
+          validate={[required]}
+        />
         <Button onPress={handleSubmit}>Add exchange</Button>
       </View>
     );

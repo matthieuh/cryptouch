@@ -27,9 +27,26 @@ const FETCH_CHART_DATA_REQUEST = 'exchanges/FETCH_CHART_DATA_REQUEST';
 const FETCH_CHART_DATA_SUCCESS = 'exchanges/FETCH_CHART_DATA_SUCCESS';
 const FETCH_CHART_DATA_FAILURE = 'exchanges/FETCH_CHART_DATA_FAILURE';
 
+// State
+const initialStateJS = {
+  synced: {},
+  currentCurrency: 'EUR',
+  balances: {},
+  totalBalancesValues: [],
+  errorMessage: null,
+  adding: false,
+  fetchingBalance: false,
+  fetchingChartData: false,
+  chartData: null,
+};
+const initialState = fromJS(initialStateJS);
+export const ExchangeRecord = Record(initialStateJS, 'Exchange');
+
 // Selectors
 const stateSelector = state => (state.get ? state.get('exchanges') : state.exchanges);
 export const getSyncedExchanges = createSelector([stateSelector], state => state.get('synced'));
+export const getSyncedExchange = exchangeName =>
+  createSelector([stateSelector], state => state.getIn(['synced', exchangeName]));
 export const getBalances = createSelector([stateSelector], state =>
   state.getIn(['balances', 'kraken', 0, 'balance']));
 export const getChartData = createSelector([stateSelector], (state) => {
@@ -45,12 +62,6 @@ export const getTopPrices = createSelector([stateSelector], state =>
 
 export const getCurrentCurrency = createSelector([stateSelector], state =>
   state.get('currentCurrency'));
-
-export const add = name => (dispatch) => {
-  dispatch({ type: ADD_REQUEST });
-  const isAvailable = isExchangeAvailable(name);
-  return isAvailable ? dispatch({ type: ADD_SUCCESS }) : dispatch({ type: ADD_FAILURE });
-};
 
 export const countBalancesValue = balances => async (dispatch) => {
   dispatch({ type: COUNT_BALANCE_REQUEST });
@@ -72,12 +83,13 @@ export const countBalancesValue = balances => async (dispatch) => {
 
 export const fetchBalances = () => async (dispatch, getState) => {
   dispatch({ type: FETCH_BALANCE_REQUEST });
-
-  // await fetchTradeHistory('kraken');
+  // const config = getSyncedExchange(getState(), 'kraken');
+  // await fetchTradeHistory('kraken', config);
 
   try {
     const synced = getSyncedExchanges(getState()).toJS();
-    const tasks = synced.map(async exchangeName => fetchBalance(exchangeName));
+    const exchanges = Object.entries(synced);
+    const tasks = exchanges.map(async ([name, config]) => fetchBalance(name, config));
 
     if (!tasks.length) {
       throw new Error('There is no balances');
@@ -85,16 +97,16 @@ export const fetchBalances = () => async (dispatch, getState) => {
 
     const tasksRes = await Promise.all(tasks);
 
-    const balancesTasks = tasksRes.map(async (exchange, index) => {
-      const exchangeName = synced[index];
-      const topPrices = await getPrices(exchangeName);
-      const btcBalance = await getBalanceIn(exchangeName, exchange.total, 'BTC');
+    const balancesTasks = tasksRes.map(async (balance, index) => {
+      const [exchangeName, config] = exchanges[index];
+      const topPrices = await getPrices(exchangeName, config);
+      const btcBalance = await getBalanceIn(exchangeName, config, balance.total, 'BTC');
 
       return {
         [exchangeName]: {
           id: exchangeName,
           at: moment().format(),
-          balance: exchange.total,
+          balance: balance.total,
           btcBalance,
           topPrices,
         },
@@ -107,6 +119,7 @@ export const fetchBalances = () => async (dispatch, getState) => {
     dispatch({ type: FETCH_BALANCE_SUCCESS, balances });
     dispatch(countBalancesValue(balances));
   } catch (error) {
+    console.log('FETCH_BALANCE_FAILURE', error);
     dispatch({ type: FETCH_BALANCE_FAILURE, message: error.message });
   }
 };
@@ -114,7 +127,8 @@ export const fetchBalances = () => async (dispatch, getState) => {
 export const fetchChartData = () => async (dispatch, getState) => {
   try {
     dispatch({ type: FETCH_CHART_DATA_REQUEST });
-    const ohlcv = await fetchOHLCV('kraken');
+    const config = getSyncedExchange(getState(), 'kraken');
+    const ohlcv = await fetchOHLCV('kraken', config);
     const totalBalancesValues = stateSelector(getState())
       .get('totalBalancesValues')
       .toJS();
@@ -133,38 +147,21 @@ export const fetchChartData = () => async (dispatch, getState) => {
   }
 };
 
-export const ExchangeRecord = Record(
-  {
-    synced: ['kraken'],
-    currentCurrency: 'EUR',
-    balances: {},
-    totalBalancesValues: [],
-    errorMessage: null,
-    adding: false,
-    fetchingBalance: false,
-  },
-  'Exchange',
-);
-
-// State
-const initialState = fromJS({
-  synced: ['kraken'],
-  currentCurrency: 'EUR',
-  balances: {},
-  totalBalancesValues: [],
-  errorMessage: null,
-  adding: false,
-  fetchingBalance: false,
-  fetchingChartData: false,
-  chartData: null,
-});
+export const addExchange = ({ name, ...restProps }) => async (dispatch) => {
+  await dispatch({ type: ADD_REQUEST });
+  await dispatch({ type: ADD_SUCCESS, payload: { name, ...restProps } });
+  // dispatch({ type: ADD_FAILURE });
+  dispatch(fetchBalances());
+};
 
 // Reducers
 export default handleActions(
   {
     [ADD_REQUEST]: state => state.set('adding', true),
     [ADD_SUCCESS]: (state, action) =>
-      state.update('synced', list => list.push(action.exchangeName)).set('adding', false),
+      state
+        .update('synced', synced => synced.set(action.payload.name, action.payload))
+        .set('adding', false),
     [ADD_FAILURE]: (state, action) =>
       state.set('errorMessage', action.message).set('adding', false),
     [FETCH_BALANCE_REQUEST]: state => state.set('errorMessage', null).set('fetchingBalance', true),
