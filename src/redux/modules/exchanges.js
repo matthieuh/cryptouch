@@ -1,4 +1,4 @@
-import { handleActions } from 'redux-actions';
+import { handleActions, createAction } from 'redux-actions';
 import { reduce } from 'lodash';
 import { fromJS, List, Map, Record } from 'immutable';
 import { createSelector } from 'reselect';
@@ -16,6 +16,7 @@ import {
 const ADD_REQUEST = 'exchanges/ADD_REQUEST';
 const ADD_SUCCESS = 'exchanges/ADD_SUCCESS';
 const ADD_FAILURE = 'exchanges/ADD_FAILURE';
+const SET_CURRENT_SCOPE = 'exchanges/SET_CURRENT_SCOPE';
 const FETCH_BALANCE_REQUEST = 'exchanges/FETCH_BALANCE_REQUEST';
 const FETCH_BALANCE_SUCCESS = 'exchanges/FETCH_BALANCE_SUCCESS';
 const FETCH_BALANCE_FAILURE = 'exchanges/FETCH_BALANCE_FAILURE';
@@ -30,7 +31,7 @@ const FETCH_CHART_DATA_FAILURE = 'exchanges/FETCH_CHART_DATA_FAILURE';
 const initialStateJS = {
   synced: {},
   currentCurrency: 'EUR',
-  currentScope: 'kraken',
+  currentScope: 'kraken-1523058183493',
   balances: {},
   totalBalancesValues: [],
   errorMessage: null,
@@ -45,7 +46,8 @@ export const ExchangeRecord = Record(initialStateJS, 'Exchange');
 // Selectors
 const stateSelector = state => (state.get ? state.get('exchanges') : state.exchanges);
 export const getCurrentScope = createSelector([stateSelector], state => state.get('currentScope'));
-export const getSyncedExchanges = createSelector([stateSelector], state => state.get('synced'));
+export const getSyncedExchanges = createSelector([stateSelector], state =>
+  state.get('synced').toJS());
 export const getSyncedExchange = createSelector([stateSelector], (state) => {
   const scope = state.get('currentScope');
   console.log('getSyncedExchange', state);
@@ -58,12 +60,16 @@ export const getChartData = createSelector([stateSelector], (state) => {
   const chartData = state.get('chartData');
   return chartData ? chartData.toJS() : [];
 });
-export const getLastUpdate = createSelector([stateSelector], state =>
-  state.getIn(['balances', 'kraken', 0, 'at']));
+export const getLastUpdate = createSelector([stateSelector], (state) => {
+  const scope = state.get('currentScope');
+  return state.getIn(['balances', scope, 0, 'at']);
+});
 export const getTotalBalancesValue = createSelector([stateSelector], state =>
   state.getIn(['totalBalancesValues', 0, 'value']));
-export const getTopPrices = createSelector([stateSelector], state =>
-  state.getIn(['balances', 'kraken', 0, 'topPrices']));
+export const getTopPrices = createSelector([stateSelector], (state) => {
+  const scope = state.get('currentScope');
+  return state.getIn(['balances', scope, 0, 'topPrices']).toJS();
+});
 
 export const getCurrentCurrency = createSelector([stateSelector], state =>
   state.get('currentCurrency'));
@@ -91,12 +97,12 @@ export const fetchBalances = () => async (dispatch, getState) => {
   console.log('getState()', getState());
   const currentExchangeConf = getSyncedExchange(getState());
   console.log('currentExchangeConf', currentExchangeConf);
-  await fetchTradeHistory('kraken', currentExchangeConf);
+  await fetchTradeHistory(currentExchangeConf);
 
   try {
-    const synced = getSyncedExchanges(getState()).toJS();
+    const synced = getSyncedExchanges(getState());
     const exchanges = Object.entries(synced);
-    const tasks = exchanges.map(async ([name, config]) => fetchBalance(name, config));
+    const tasks = exchanges.map(async ([, config]) => fetchBalance(config));
 
     if (!tasks.length) {
       throw new Error('There is no balances');
@@ -106,8 +112,8 @@ export const fetchBalances = () => async (dispatch, getState) => {
 
     const balancesTasks = tasksRes.map(async (balance, index) => {
       const [exchangeName, config] = exchanges[index];
-      const topPrices = await getPrices(exchangeName, config);
-      const btcBalance = await getBalanceIn(exchangeName, config, balance.total, 'BTC');
+      const topPrices = await getPrices(config);
+      const btcBalance = await getBalanceIn(config, balance.total, 'BTC');
 
       return {
         [exchangeName]: {
@@ -135,7 +141,7 @@ export const fetchChartData = () => async (dispatch, getState) => {
   try {
     dispatch({ type: FETCH_CHART_DATA_REQUEST });
     const config = getSyncedExchange(getState());
-    const ohlcv = await fetchOHLCV('kraken', config);
+    const ohlcv = await fetchOHLCV(config);
     const totalBalancesValues = stateSelector(getState())
       .get('totalBalancesValues')
       .toJS();
@@ -161,16 +167,27 @@ export const addExchange = ({ name, ...restProps }) => async (dispatch) => {
   dispatch(fetchBalances());
 };
 
+// export const setCurrentScope = createAction(SET_CURRENT_SCOPE, async ({ dispatch }) => {
+//   await dispatch(fetchBalances());
+// });
+
+export const setCurrentScope = name => async (dispatch) => {
+  await dispatch({ type: SET_CURRENT_SCOPE, payload: name });
+  await dispatch(fetchBalances());
+};
+
 // Reducers
 export default handleActions(
   {
     [ADD_REQUEST]: state => state.set('adding', true),
     [ADD_SUCCESS]: (state, action) =>
       state
-        .update('synced', synced => synced.set(action.payload.name, action.payload))
+        .update('synced', synced =>
+          synced.set(`${action.payload.name}-${Date.now()}`, action.payload))
         .set('adding', false),
     [ADD_FAILURE]: (state, action) =>
       state.set('errorMessage', action.message).set('adding', false),
+    [SET_CURRENT_SCOPE]: (state, action) => state.set('currentScope', action.payload),
     [FETCH_BALANCE_REQUEST]: state => state.set('errorMessage', null).set('fetchingBalance', true),
     [FETCH_BALANCE_SUCCESS]: (state, action) =>
       fromJS(action.balances)

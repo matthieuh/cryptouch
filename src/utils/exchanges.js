@@ -5,8 +5,8 @@ export const ccxtExchanges = ['kraken'];
 
 export const isExchangeAvailable = exchangeName => availableExchanges.includes(exchangeName);
 
-export const getBalanceIn = async (exchangeName, { apiKey, apiSecret }, balances, currency) => {
-  const exchange = new ccxt[exchangeName]();
+export const getBalanceIn = async ({ name, apiKey, apiSecret }, balances, currency) => {
+  const exchange = new ccxt[name]();
   exchange.apiKey = apiKey;
   exchange.secret = apiSecret;
   const tickers = await exchange.fetchTickers();
@@ -22,27 +22,23 @@ export const getBalanceIn = async (exchangeName, { apiKey, apiSecret }, balances
   }, {});
 };
 
-export const getTopPrices = async (
-  exchangeName,
-  { apiKey, apiSecret },
-  topCurrencies = ['USD', 'EUR'],
-) => {
-  const exchange = new ccxt[exchangeName]();
+export const getTopPrices = async ({ name, apiKey, apiSecret }, topCurrencies = ['USD', 'EUR']) => {
+  const exchange = new ccxt[name]();
   exchange.apiKey = apiKey;
   exchange.secret = apiSecret;
   const tickers = await exchange.fetchTickers();
   return Object.assign(...topCurrencies.map(tc => ({ [tc]: tickers[`BTC/${tc.toUpperCase()}`].last })));
 };
 
-export const fetchBalance = (exchangeName, { apiKey, apiSecret }) => {
-  console.log('fetchBalance', exchangeName, apiKey, apiSecret, ccxt);
-  if (!isExchangeAvailable(exchangeName)) {
+export const fetchBalance = ({ name, apiKey, apiSecret }) => {
+  console.log('fetchBalance name', name);
+  console.log('fetchBalance apiKey, apiSecret', apiKey, apiSecret);
+  if (!isExchangeAvailable(name)) {
     throw new Error('This exchange is not available yet');
   }
 
-  if (ccxtExchanges.includes(exchangeName)) {
-    console.log('exchangeName', exchangeName);
-    const exchange = new ccxt[exchangeName]();
+  if (ccxtExchanges.includes(name)) {
+    const exchange = new ccxt[name]();
     exchange.apiKey = apiKey;
     exchange.secret = apiSecret;
 
@@ -52,9 +48,9 @@ export const fetchBalance = (exchangeName, { apiKey, apiSecret }) => {
   throw new Error('Error fetching balance.');
 };
 
-export const fetchTradeHistory = async (exchangeName, { apiKey, apiSecret }) => {
-  console.log('fetchTradeHistory', exchangeName, apiKey, apiSecret);
-  const exchange = new ccxt[exchangeName]();
+export const fetchTradeHistory = async ({ name, apiKey, apiSecret }) => {
+  console.log('fetchTradeHistory', name, apiKey, apiSecret);
+  const exchange = new ccxt[name]();
   exchange.apiKey = apiKey;
   exchange.secret = apiSecret;
 
@@ -62,13 +58,13 @@ export const fetchTradeHistory = async (exchangeName, { apiKey, apiSecret }) => 
   console.log('orders', orders);
 };
 
-export const fetchOHLCV = async (exchangeName, { apiKey, apiSecret }) => {
-  if (!isExchangeAvailable(exchangeName)) {
+export const fetchOHLCV = async ({ name, apiKey, apiSecret }) => {
+  if (!isExchangeAvailable(name)) {
     throw new Error('This exchange is not available yet');
   }
 
-  if (ccxtExchanges.includes(exchangeName)) {
-    const exchange = new ccxt[exchangeName]();
+  if (ccxtExchanges.includes(name)) {
+    const exchange = new ccxt[name]();
     exchange.apiKey = apiKey;
     exchange.secret = apiSecret;
     await exchange.loadMarkets();

@@ -5,10 +5,19 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#F1F7FA',
   },
-  chartContainer: {
-    height: '68%',
+  containerOverflow: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
     backgroundColor: '#2C4A83',
+  },
+  chartContainer: {
+    backgroundColor: '#2C4A83',
+    height: 350,
     paddingRight: 0,
+  },
+  content: {
+    flex: 1,
   },
 });
 

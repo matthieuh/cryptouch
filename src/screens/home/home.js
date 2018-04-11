@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { View, Text } from 'react-native';
+import { View, ScrollView, Text, Dimensions, RefreshControl } from 'react-native';
 import PropTypes from 'prop-types';
 import moment from 'moment';
 import SafeAreaView from 'react-native-safe-area-view';
@@ -33,15 +33,21 @@ class Home extends Component {
     super(props);
 
     this.state = {
+      refreshingData: false,
       addModalVisible: false,
     };
   }
 
-  async componentDidMount() {
-    // this.props.fetchChartData();
-    await this.props.fetchBalances();
-    // this.props.fetchChartData();
+  componentDidMount() {
+    this.refreshData();
   }
+
+  refreshData = async () => {
+    this.setState({ refreshingData: true });
+    await this.props.setCurrentScope('kraken-1523058183493');
+    await this.props.fetchChartData();
+    this.setState({ refreshingData: false });
+  };
 
   toggleModalVisibility = () => {
     this.setState({ addModalVisible: !this.state.addModalVisible });
@@ -56,35 +62,64 @@ class Home extends Component {
       currentCurrency,
       syncedExchanges,
       addExchange,
+      setCurrentScope,
     } = this.props;
     const { addModalVisible } = this.state;
+    const fullHeight = Dimensions.get('window').height;
+
+    const syncedExchangesArray = Object.entries(syncedExchanges);
+    console.log('syncedExchangesArray', syncedExchanges, syncedExchangesArray);
+
+    // if (syncedExchangesArray.length) {
+    // setCurrentScope('kraken-1523058183493');
+    // }
+
     return (
-      <View style={styles.container}>
-        <View style={styles.chartContainer}>
-          <SafeAreaView style={styles.content}>
-            <Price
-              btcAmount={totalBalancesValue}
-              btcValues={topPrices}
-              currency={currentCurrency}
+      <SafeAreaView style={{ flex: 1, backgroundColor: '#2C4A83' }}>
+        <View style={styles.container}>
+          <ScrollView style={styles.scrollContainer}>
+            <View style={[styles.containerOverflow, { height: fullHeight, top: -fullHeight }]} />
+            <RefreshControl
+              refreshing={this.state.refreshingData}
+              onRefresh={this.refreshData}
+              tintColor="#fff"
             />
-            <Chart data={chartData} />
-            <Text style={{ flex: 1, color: 'white', textAlign: 'center' }}>
-              Last Update: {moment(lastUpdate).fromNow()}
-            </Text>
-          </SafeAreaView>
+            <View style={styles.chartContainer}>
+              <Price
+                btcAmount={totalBalancesValue}
+                btcValues={topPrices}
+                currency={currentCurrency}
+              />
+              <Chart data={chartData} />
+              <Text style={{ flex: 1, color: 'white', textAlign: 'center' }}>
+                Last Update: {moment(lastUpdate).fromNow()}
+              </Text>
+            </View>
+            <View style={styles.content}>
+              {syncedExchangesArray.length &&
+                syncedExchangesArray.map(([syncedExchange]) => (
+                  <View
+                    style={{ backgroundColor: 'grey' }}
+                    key={`${syncedExchange.name}-${Date.now()}`}
+                  >
+                    <Text>{syncedExchange.name}</Text>
+                  </View>
+                ))}
+            </View>
+          </ScrollView>
+          <Modal
+            isVisible={addModalVisible}
+            onBackdropPress={this.toggleModalVisibility}
+            onBackButtonPress={this.toggleModalVisibility}
+            onCloseButtonPress={this.toggleModalVisibility}
+          >
+            <AddExchangeForm onSubmit={addExchange} onSubmitSuccess={this.toggleModalVisibility} />
+          </Modal>
+          <Button onPress={this.toggleModalVisibility} floating>
+            Add
+          </Button>
         </View>
-        <Button onPress={this.toggleModalVisibility} floating>
-          Add
-        </Button>
-        <Modal
-          isVisible={addModalVisible}
-          onBackdropPress={this.toggleModalVisibility}
-          onBackButtonPress={this.toggleModalVisibility}
-          onCloseButtonPress={this.toggleModalVisibility}
-        >
-          <AddExchangeForm onSubmit={addExchange} onSubmitSuccess={this.toggleModalVisibility} />
-        </Modal>
-      </View>
+      </SafeAreaView>
     );
   }
 }

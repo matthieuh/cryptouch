@@ -1,7 +1,7 @@
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 
-import Home from '../../screens/home';
+import Home from '../screens/home';
 
 import {
   addExchange,
@@ -13,7 +13,8 @@ import {
   getCurrentCurrency,
   getLastUpdate,
   getSyncedExchanges,
-} from '../../redux/modules/exchanges';
+  setCurrentScope,
+} from '../redux/modules/exchanges';
 
 const mapStateToProps = state => ({
   totalBalancesValue: getTotalBalancesValue(state),
@@ -25,6 +26,14 @@ const mapStateToProps = state => ({
 });
 
 const mapDispatchToProps = dispatch =>
-  bindActionCreators({ fetchBalances, fetchChartData, addExchange }, dispatch);
+  bindActionCreators(
+    {
+      fetchBalances,
+      fetchChartData,
+      addExchange,
+      setCurrentScope,
+    },
+    dispatch,
+  );
 
 export default connect(mapStateToProps, mapDispatchToProps)(Home);
