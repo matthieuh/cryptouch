@@ -74,27 +74,32 @@ class Home extends Component {
     const fullHeight = Dimensions.get('window').height;
 
     const syncedExchangesArray = Object.entries(syncedExchanges);
-    console.log('syncedExchangesArray', syncedExchanges, syncedExchangesArray);
-
-    // if (syncedExchangesArray.length) {
-    // setCurrentScope('kraken-1523058183493');
-    // }
-    //
-    const refreshControl = (
-      <RefreshControl
-        refreshing={this.state.refreshingData}
-        onRefresh={this.refreshData}
-        tintColor="#fff"
-      />
-    );
 
     return (
       <SafeAreaView style={{ flex: 1, backgroundColor: '#2C4A83' }}>
-        {/* <StatusBar translucent /> */}
         <View style={styles.container}>
-          <ScrollView style={styles.scrollContainer} refreshControl={refreshControl}>
+          <ScrollView
+            style={styles.scrollContainer}
+            {...(Platform.OS === 'android'
+              ? {
+                  refreshControl: (
+                    <RefreshControl
+                      refreshing={this.state.refreshingData}
+                      onRefresh={this.refreshData}
+                      tintColor="#fff"
+                    />
+                  ),
+                }
+              : {})}
+          >
             <View style={[styles.containerOverflow, { height: fullHeight, top: -fullHeight }]} />
-            {Platform.OS === 'ios' && refreshControl}
+            {Platform.OS === 'ios' && (
+              <RefreshControl
+                refreshing={this.state.refreshingData}
+                onRefresh={this.refreshData}
+                tintColor="#fff"
+              />
+            )}
             <View style={styles.chartContainer}>
               <Price
                 btcAmount={totalBalancesValue}
