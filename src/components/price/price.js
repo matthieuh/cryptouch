@@ -15,14 +15,14 @@ const defaultProps = { style: null, btcAmount: null };
 const Price = ({
   btcAmount, btcValues = {}, currency, style, ...props
 }) => {
-  console.log('btcValues', btcValues, currency);
-  const currencyInBtc =
-    btcValues && Map.isMap(btcValues) ? get(btcValues, currency) : btcValues[currency];
+  console.log('btcValues', JSON.stringify(btcValues), currency);
+  const currencyInBtc = btcValues ? btcValues[currency] : null;
+  console.log('currencyInBtc', currencyInBtc);
   const price = currencyInBtc * btcAmount;
   return (
     <View {...props} style={[styles.container, style]}>
       <Text style={styles.amountText}>
-        {price &&
+        {!!price &&
           price.toLocaleString('en-US', {
             style: 'currency',
             currency,

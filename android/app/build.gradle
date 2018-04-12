@@ -115,10 +115,10 @@ android {
     }
     signingConfigs {
         release {
-            keyAlias System.getenv("BITRISEIO_ANDROID_KEYSTORE_ALIAS")
-            keyPassword System.getenv("BITRISEIO_ANDROID_KEYSTORE_PRIVATE_KEY_PASSWORD")
-            storeFile file(System.getenv("HOME") + "/keystores/my_keystore.jks")
-            storePassword System.getenv("BITRISEIO_ANDROID_KEYSTORE_PASSWORD")
+          storeFile file(MYAPP_RELEASE_STORE_FILE)
+          storePassword MYAPP_RELEASE_STORE_PASSWORD
+          keyAlias MYAPP_RELEASE_KEY_ALIAS
+          keyPassword MYAPP_RELEASE_KEY_PASSWORD
         }
     }
     splits {
@@ -131,6 +131,7 @@ android {
     }
     buildTypes {
         release {
+            signingConfig signingConfigs.release
             minifyEnabled enableProguardInReleaseBuilds
             proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
         }

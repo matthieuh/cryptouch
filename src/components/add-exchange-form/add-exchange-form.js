@@ -85,6 +85,7 @@ class AddExchangeForm extends Component {
           placeholder="Exchange"
           iosHeader="Select one"
           validate={[required]}
+          style={{ flex: 1 }}
         >
           {exchangeItems}
         </Field>

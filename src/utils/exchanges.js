@@ -31,8 +31,6 @@ export const getTopPrices = async ({ name, apiKey, apiSecret }, topCurrencies = 
 };
 
 export const fetchBalance = ({ name, apiKey, apiSecret }) => {
-  console.log('fetchBalance name', name);
-  console.log('fetchBalance apiKey, apiSecret', apiKey, apiSecret);
   if (!isExchangeAvailable(name)) {
     throw new Error('This exchange is not available yet');
   }

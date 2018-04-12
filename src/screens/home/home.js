@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { View, ScrollView, Text, Dimensions, RefreshControl } from 'react-native';
+import { View, ScrollView, Text, Dimensions, RefreshControl, Platform } from 'react-native';
 import PropTypes from 'prop-types';
 import moment from 'moment';
 import SafeAreaView from 'react-native-safe-area-view';
@@ -44,8 +44,14 @@ class Home extends Component {
 
   refreshData = async () => {
     this.setState({ refreshingData: true });
-    await this.props.setCurrentScope('kraken-1523058183493');
-    await this.props.fetchChartData();
+
+    const syncedExchangesArray = Object.keys(this.props.syncedExchanges);
+    console.log('syncedExchanges', syncedExchangesArray);
+    if (syncedExchangesArray.length) {
+      await this.props.setCurrentScope(syncedExchangesArray[0]);
+      await this.props.fetchChartData();
+    }
+
     this.setState({ refreshingData: false });
   };
 
@@ -73,17 +79,22 @@ class Home extends Component {
     // if (syncedExchangesArray.length) {
     // setCurrentScope('kraken-1523058183493');
     // }
+    //
+    const refreshControl = (
+      <RefreshControl
+        refreshing={this.state.refreshingData}
+        onRefresh={this.refreshData}
+        tintColor="#fff"
+      />
+    );
 
     return (
       <SafeAreaView style={{ flex: 1, backgroundColor: '#2C4A83' }}>
+        {/* <StatusBar translucent /> */}
         <View style={styles.container}>
-          <ScrollView style={styles.scrollContainer}>
+          <ScrollView style={styles.scrollContainer} refreshControl={refreshControl}>
             <View style={[styles.containerOverflow, { height: fullHeight, top: -fullHeight }]} />
-            <RefreshControl
-              refreshing={this.state.refreshingData}
-              onRefresh={this.refreshData}
-              tintColor="#fff"
-            />
+            {Platform.OS === 'ios' && refreshControl}
             <View style={styles.chartContainer}>
               <Price
                 btcAmount={totalBalancesValue}
@@ -96,7 +107,7 @@ class Home extends Component {
               </Text>
             </View>
             <View style={styles.content}>
-              {syncedExchangesArray.length &&
+              {!!syncedExchangesArray.length &&
                 syncedExchangesArray.map(([syncedExchange]) => (
                   <View
                     style={{ backgroundColor: 'grey' }}

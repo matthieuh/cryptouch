@@ -1,0 +1,2 @@
+app_identifier "com.matthieuh.cryptouch" # The bundle identifier of your app
+apple_id "matthieu.hostache@gmail.com" # Your Apple email address

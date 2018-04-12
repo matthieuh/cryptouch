@@ -13,7 +13,7 @@ const styles = StyleSheet.create({
   },
   chartContainer: {
     backgroundColor: '#2C4A83',
-    height: 350,
+    height: 400,
     paddingRight: 0,
   },
   content: {

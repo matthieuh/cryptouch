@@ -50,8 +50,6 @@ export const getSyncedExchanges = createSelector([stateSelector], state =>
   state.get('synced').toJS());
 export const getSyncedExchange = createSelector([stateSelector], (state) => {
   const scope = state.get('currentScope');
-  console.log('getSyncedExchange', state);
-  console.log('CurrentScope', scope);
   return state.getIn(['synced', scope]);
 });
 export const getBalances = createSelector([stateSelector], state =>
@@ -68,7 +66,8 @@ export const getTotalBalancesValue = createSelector([stateSelector], state =>
   state.getIn(['totalBalancesValues', 0, 'value']));
 export const getTopPrices = createSelector([stateSelector], (state) => {
   const scope = state.get('currentScope');
-  return state.getIn(['balances', scope, 0, 'topPrices']).toJS();
+  const topPrice = scope ? state.getIn(['balances', scope, 0, 'topPrices']) : null;
+  return topPrice ? topPrice.toJS() : null;
 });
 
 export const getCurrentCurrency = createSelector([stateSelector], state =>
@@ -94,9 +93,7 @@ export const countBalancesValue = balances => async (dispatch) => {
 
 export const fetchBalances = () => async (dispatch, getState) => {
   dispatch({ type: FETCH_BALANCE_REQUEST });
-  console.log('getState()', getState());
   const currentExchangeConf = getSyncedExchange(getState());
-  console.log('currentExchangeConf', currentExchangeConf);
   await fetchTradeHistory(currentExchangeConf);
 
   try {
@@ -192,7 +189,8 @@ export default handleActions(
     [FETCH_BALANCE_SUCCESS]: (state, action) =>
       fromJS(action.balances)
         .reduce(
-          (acc, b, bName) => acc.updateIn(['balances', bName], l => (l || List()).push(fromJS(b))),
+          (acc, b, bName) =>
+            acc.updateIn(['balances', bName], l => (l || List()).insert(0, fromJS(b))),
           state,
         )
         .set('fetchingBalance', false),
