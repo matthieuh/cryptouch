@@ -5,6 +5,10 @@
     "name": "Matthieu Hostache",
     "email": "matthieu.hostache@gmail.com"
   },
+  "engines": {
+    "node": ">=8.x",
+    "npm": ">=5.x"
+  },
   "devDependencies": {
     "@storybook/addon-actions": "^3.3.15",
     "@storybook/addon-links": "^3.3.15",
@@ -31,7 +35,8 @@
     "react-test-renderer": "16.2.0"
   },
   "scripts": {
-    "lint": "eslint --cache --ignore-path .gitignore --format=node_modules/eslint-formatter-pretty . ",
+    "lint":
+      "eslint --cache --ignore-path .gitignore --format=node_modules/eslint-formatter-pretty . ",
     "start": "react-native start",
     "android": "react-native run-android",
     "ios": "cross-env ENVFILE=.env.dev react-native run-ios",
